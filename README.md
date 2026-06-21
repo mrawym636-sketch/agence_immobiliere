@@ -501,4 +501,4 @@ Ce projet est sous licence MIT – libre d'utilisation et de modification.
 
 © 2025 Agence Prestige – Développé dans le cadre du module JavaScript · OFPPT
 
-Développé par [Votre Nom] – Formation Développement Web
+Développé par [MOHAMAD AMRAOUI + KHALID TAHIR] – Formation Développement Web
