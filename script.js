@@ -1,6 +1,3 @@
-// ============================================
-// script.js - Version 10/10 (sans exception dans hashPassword)
-// ============================================
 
 function getCurrentUser() {
     return JSON.parse(localStorage.getItem('userConnected'));
