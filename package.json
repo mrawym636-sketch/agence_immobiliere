@@ -1,0 +1,17 @@
+{
+  "name": "agence-prestige",
+  "version": "2.0.0",
+  "description": "Gestion des commissions immobilières avec taux progressifs",
+  "main": "index.html",
+  "scripts": {
+    "start": "json-server --watch db.json --port 3000",
+    "dev": "live-server --port=5500"
+  },
+  "keywords": ["immobilier", "commissions", "ofppt", "javascript"],
+  "author": "Votre Nom",
+  "license": "MIT",
+  "devDependencies": {
+    "json-server": "^0.17.4",
+    "live-server": "^1.2.2"
+  }
+}

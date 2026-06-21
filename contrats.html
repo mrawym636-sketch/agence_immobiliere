@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrats - Agence Prestige</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo"><h4>🏠 Agence Prestige</h4><p>Immobilier Maroc</p></div>
+    <nav>
+        <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i><span> Dashboard</span></a>
+        <a href="contrats.html" class="nav-link active"><i class="bi bi-file-text"></i><span> Contrats</span></a>
+        <a href="visites.html" class="nav-link"><i class="bi bi-eye"></i><span> Visites</span></a>
+        <a href="agents.html" class="nav-link admin-only"><i class="bi bi-people"></i><span> Agents</span></a>
+        <a href="commissions.html" class="nav-link"><i class="bi bi-calculator"></i><span> Commissions</span></a>
+        <a href="rapports.html" class="nav-link"><i class="bi bi-graph-up"></i><span> Rapports</span></a>
+        <a href="parametres.html" class="nav-link"><i class="bi bi-gear"></i><span> Paramètres</span></a>
+        <hr><a href="#" class="nav-link text-danger" onclick="logout()"><i class="bi bi-box-arrow-right"></i><span> Déconnexion</span></a>
+    </nav>
+</div>
+
+<div class="main-content fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h3 class="fw-bold mb-0">Gestion des contrats</h3><p class="text-muted small">Gérez tous les contrats signés</p></div>
+        <button class="btn btn-primary rounded-pill" onclick="openAddContrat()"><i class="bi bi-plus-circle me-2"></i>Nouveau contrat</button>
+    </div>
+    <div class="glass-card p-3 mb-4">
+        <div class="row g-3">
+            <div class="col-md-4"><label class="form-label small fw-semibold">Mois</label><input type="month" id="filtreMois" class="form-control rounded-pill"></div>
+            <div class="col-md-4 admin-only"><label class="form-label small fw-semibold">Agent</label><select id="filtreAgent" class="form-select rounded-pill"></select></div>
+            <div class="col-md-4"><label class="form-label small fw-semibold">Type</label><select id="filtreType" class="form-select rounded-pill"><option value="">Tous</option><option>Appartement</option><option>Villa</option><option>Bureau</option></select></div>
+        </div>
+    </div>
+    <div class="glass-card p-0 overflow-hidden">
+        <table class="table table-dark table-hover mb-0">
+            <thead><tr><th>#</th><th>Agent</th><th>Type</th><th>Prix</th><th>Commission</th><th>Date</th><th></th></tr></thead>
+            <tbody id="contratsBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+<script>
+    (async () => {
+        await loadData();
+        if (!getCurrentUser()) window.location.href = "login.html";
+        if (!isAdmin()) document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        function chargerContrats() {
+            const mois = document.getElementById('filtreMois').value || getCurrentMonth();
+            let filtered = contrats.filter(c => c.date.startsWith(mois));
+            if (!isAdmin()) filtered = filtered.filter(c => c.agentId === getCurrentUser().id);
+            const agentFiltre = document.getElementById('filtreAgent')?.value;
+            if (agentFiltre) filtered = filtered.filter(c => c.agentId == agentFiltre);
+            const typeFiltre = document.getElementById('filtreType').value;
+            if (typeFiltre) filtered = filtered.filter(c => c.type === typeFiltre);
+            const agentsMap = Object.fromEntries(users.map(u => [u.id, u]));
+            const tbody = document.getElementById('contratsBody');
+            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Aucun contrat trouvé</td></tr>'; return; }
+            tbody.innerHTML = filtered.map(c => {
+                const agent = agentsMap[c.agentId];
+                const contratsMois = contrats.filter(c2 => c2.agentId === c.agentId && c2.date.startsWith(mois));
+                const visitsMois = getVisitesByAgentAndMonth(c.agentId, mois);
+                const salary = calculateSalary(agent, contratsMois, visitsMois);
+                const commission = c.prixVente * salary.rate / 100;
+                const canEdit = isAdmin() || c.agentId === getCurrentUser().id;
+                return `<tr>
+                    <td class="text-muted small">#${c.id}</td>
+                    <td class="fw-semibold">${agent?.name || '?'}</td>
+                    <td>${c.type}</td>
+                    <td class="fw-bold">${formatMoney(c.prixVente)}</td>
+                    <td><span class="badge ${salary.rate === 1.5 ? 'bg-danger' : 'bg-primary'}">${salary.rate}%</span> ${formatMoney(commission)}</td>
+                    <td>${c.date}</td>
+                    <td class="text-end">${canEdit ? `<button class="btn btn-sm btn-outline-danger rounded-pill" onclick="deleteContrat(${c.id})"><i class="bi bi-trash"></i></button>` : ''}</td>
+                </tr>`;
+            }).join('');
+        }
+        function chargerFiltreAgents() {
+            const agents = users.filter(u => u.role === 'agent');
+            document.getElementById('filtreAgent').innerHTML = '<option value="">Tous</option>' + agents.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+        }
+        window.openAddContrat = function() {
+            const agentsOpt = users.filter(u => u.role === 'agent').map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+            const modal = document.createElement('div');
+            modal.className = 'modal-custom';
+            modal.innerHTML = `
+                <div class="modal-content-custom">
+                    <h4 class="mb-3">📝 Nouveau contrat</h4>
+                    <label>Agent</label><select id="modalAgentId" class="form-select mb-2">${agentsOpt}</select>
+                    <label>Type</label><select id="modalType" class="form-select mb-2"><option>Appartement</option><option>Villa</option><option>Bureau</option></select>
+                    <label>Prix (MAD)</label><input type="number" id="modalPrix" class="form-control mb-2" min="1">
+                    <label>Date</label><input type="date" id="modalDate" class="form-control mb-3" value="${new Date().toISOString().slice(0,10)}">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-secondary rounded-pill" onclick="this.closest('.modal-custom').remove()">Annuler</button>
+                        <button class="btn btn-primary rounded-pill" onclick="saveContrat()">Enregistrer</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+        window.saveContrat = function() {
+            const prix = parseFloat(document.getElementById('modalPrix').value);
+            if (!validatePositive(prix)) { showToast("Le prix doit être supérieur à 0", 'error'); return; }
+            const newId = Math.max(...contrats.map(c => c.id), 0) + 1;
+            contrats.push({ id: newId, agentId: parseInt(document.getElementById('modalAgentId').value), prixVente: prix, type: document.getElementById('modalType').value, date: document.getElementById('modalDate').value });
+            saveData();
+            document.querySelector('.modal-custom')?.remove();
+            chargerContrats();
+            showToast("Contrat ajouté");
+        };
+        window.deleteContrat = function(id) {
+            if (confirm("Supprimer ce contrat ?")) { contrats = contrats.filter(c => c.id !== id); saveData(); chargerContrats(); showToast("Contrat supprimé"); }
+        };
+        document.getElementById('filtreMois').value = getCurrentMonth();
+        document.getElementById('filtreMois').addEventListener('change', chargerContrats);
+        document.getElementById('filtreType').addEventListener('change', chargerContrats);
+        chargerFiltreAgents();
+        chargerContrats();
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agents - Agence Prestige</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo"><h4>🏠 Agence Prestige</h4><p>Immobilier Maroc</p></div>
+    <nav>
+        <a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i><span> Dashboard</span></a>
+        <a href="contrats.html" class="nav-link"><i class="bi bi-file-text"></i><span> Contrats</span></a>
+        <a href="visites.html" class="nav-link"><i class="bi bi-eye"></i><span> Visites</span></a>
+        <a href="agents.html" class="nav-link active admin-only"><i class="bi bi-people"></i><span> Agents</span></a>
+        <a href="commissions.html" class="nav-link"><i class="bi bi-calculator"></i><span> Commissions</span></a>
+        <a href="rapports.html" class="nav-link"><i class="bi bi-graph-up"></i><span> Rapports</span></a>
+        <a href="parametres.html" class="nav-link"><i class="bi bi-gear"></i><span> Paramètres</span></a>
+        <hr><a href="#" class="nav-link text-danger" onclick="logout()"><i class="bi bi-box-arrow-right"></i><span> Déconnexion</span></a>
+    </nav>
+</div>
+
+<div class="main-content fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h3 class="fw-bold mb-0">Gestion des agents</h3><p class="text-muted small">Administrez les comptes des agents</p></div>
+        <button class="btn btn-primary rounded-pill" onclick="openAddAgent()"><i class="bi bi-person-plus me-2"></i>Ajouter un agent</button>
+    </div>
+    <div class="glass-card p-0 overflow-hidden">
+        <table class="table table-dark table-hover mb-0">
+            <thead><tr><th>ID</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Visites (mois)</th><th>Actions</th></tr></thead>
+            <tbody id="agentsBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="agentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-0"><h5 id="modalTitleAgent">Agent</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="hidden" id="agentId">
+                <div class="mb-3"><label>Nom</label><input type="text" id="inputNom" class="form-control"></div>
+                <div class="mb-3"><label>Email</label><input type="email" id="inputEmail" class="form-control"></div>
+                <div class="mb-3"><label>Mot de passe</label><input type="password" id="inputMdp" class="form-control" placeholder="Laisser vide"></div>
+                <div class="row">
+                    <div class="col-md-6"><label>Rôle</label><select id="inputRole" class="form-select"><option value="agent">Agent</option><option value="admin">Admin</option></select></div>
+                    <div class="col-md-6"><label>Visites (mois)</label><input type="number" id="inputVisites" class="form-control" min="0"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0"><button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button><button class="btn btn-primary rounded-pill" onclick="saveAgent()">Enregistrer</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="suppModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content glass-card text-center p-3">
+            <div class="modal-body"><i class="bi bi-person-x fs-1 text-danger"></i><p>Supprimer cet agent ?</p><button class="btn btn-danger btn-sm rounded-pill" id="btnConfirmSupp">Oui</button><button class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Non</button></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+<script>
+    (async () => {
+        await loadData();
+        if (!getCurrentUser() || !isAdmin()) window.location.href = "dashboard.html";
+        let idAgent = null;
+        function chargerAgents() {
+            const mois = getCurrentMonth();
+            document.getElementById('agentsBody').innerHTML = users.map(u => {
+                const visitsMois = getVisitesByAgentAndMonth(u.id, mois);
+                return `<tr>
+                    <td class="small">#${u.id}</td>
+                    <td class="fw-semibold">${u.name}</td>
+                    <td class="small">${u.email}</td>
+                    <td><span class="badge ${u.role === 'admin' ? 'bg-warning text-dark' : 'bg-primary'}">${u.role}</span></td>
+                    <td>${visitsMois}/15</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1 rounded-pill" onclick="editAgent(${u.id})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="confirmSupp(${u.id})"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+        window.openAddAgent = function() {
+            idAgent = null;
+            document.getElementById('agentId').value = '';
+            document.getElementById('modalTitleAgent').innerText = 'Ajouter un agent';
+            document.getElementById('inputNom').value = '';
+            document.getElementById('inputEmail').value = '';
+            document.getElementById('inputMdp').value = '';
+            document.getElementById('inputRole').value = 'agent';
+            document.getElementById('inputVisites').value = '0';
+            new bootstrap.Modal(document.getElementById('agentModal')).show();
+        };
+        window.editAgent = function(id) {
+            idAgent = id;
+            const agent = users.find(u => u.id === id);
+            const mois = getCurrentMonth();
+            const visitsMois = getVisitesByAgentAndMonth(id, mois);
+            document.getElementById('agentId').value = agent.id;
+            document.getElementById('modalTitleAgent').innerText = 'Modifier agent';
+            document.getElementById('inputNom').value = agent.name;
+            document.getElementById('inputEmail').value = agent.email;
+            document.getElementById('inputRole').value = agent.role;
+            document.getElementById('inputVisites').value = visitsMois;
+            document.getElementById('inputMdp').value = '';
+            new bootstrap.Modal(document.getElementById('agentModal')).show();
+        };
+        window.confirmSupp = function(id) { idAgent = id; new bootstrap.Modal(document.getElementById('suppModal')).show(); };
+        window.saveAgent = async function() {
+            const nom = document.getElementById('inputNom').value;
+            const email = document.getElementById('inputEmail').value;
+            if (!validateRequired(nom)) { showToast("Le nom est requis", 'error'); return; }
+            if (!validateEmail(email)) { showToast("Email invalide", 'error'); return; }
+            const role = document.getElementById('inputRole').value;
+            const visits = parseInt(document.getElementById('inputVisites').value) || 0;
+            const mois = getCurrentMonth();
+            if (idAgent) {
+                const index = users.findIndex(u => u.id === idAgent);
+                users[index] = { ...users[index], name: nom, email, role };
+                updateVisits(idAgent, mois, visits);
+            } else {
+                const newId = Math.max(...users.map(u => u.id), 0) + 1;
+                const mdp = document.getElementById('inputMdp').value;
+                const hashed = mdp ? await hashPassword(mdp) : await hashPassword("123456");
+                users.push({ id: newId, name: nom, email, password: hashed, role });
+                updateVisits(newId, mois, visits);
+            }
+            saveData();
+            bootstrap.Modal.getInstance(document.getElementById('agentModal')).hide();
+            chargerAgents();
+            showToast(idAgent ? "Agent modifié" : "Agent ajouté");
+            idAgent = null;
+        };
+        document.getElementById('btnConfirmSupp').addEventListener('click', () => {
+            if (idAgent) {
+                users = users.filter(u => u.id !== idAgent);
+                contrats = contrats.filter(c => c.agentId !== idAgent);
+                visites = visites.filter(v => v.agentId !== idAgent);
+                saveData();
+                saveVisites();
+                bootstrap.Modal.getInstance(document.getElementById('suppModal')).hide();
+                chargerAgents();
+                showToast("Agent supprimé");
+                idAgent = null;
+            }
+        });
+        chargerAgents();
+    })();
+</script>
+</body>
+</html>

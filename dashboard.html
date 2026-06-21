@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Agence Prestige</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo"><h4>🏠 Agence Prestige</h4><p>Immobilier Maroc</p></div>
+    <nav>
+        <a href="dashboard.html" class="nav-link active"><i class="bi bi-speedometer2"></i><span> Dashboard</span></a>
+        <a href="contrats.html" class="nav-link"><i class="bi bi-file-text"></i><span> Contrats</span></a>
+        <a href="visites.html" class="nav-link"><i class="bi bi-eye"></i><span> Visites</span></a>
+        <a href="agents.html" class="nav-link admin-only"><i class="bi bi-people"></i><span> Agents</span></a>
+        <a href="commissions.html" class="nav-link"><i class="bi bi-calculator"></i><span> Commissions</span></a>
+        <a href="rapports.html" class="nav-link"><i class="bi bi-graph-up"></i><span> Rapports</span></a>
+        <a href="parametres.html" class="nav-link"><i class="bi bi-gear"></i><span> Paramètres</span></a>
+        <hr><a href="#" class="nav-link text-danger" onclick="logout()"><i class="bi bi-box-arrow-right"></i><span> Déconnexion</span></a>
+    </nav>
+</div>
+
+<div class="main-content fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h3 class="fw-bold mb-0">Tableau de bord</h3><p class="text-muted small">Aperçu général des performances</p></div>
+        <input type="month" id="filtreMois" class="form-control w-auto rounded-pill" style="width:160px;" value="2025-06">
+    </div>
+    <div class="row g-4 mb-4" id="statsCards"></div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="table-wrapper">
+                <div class="table-title"><i class="bi bi-trophy-fill text-warning"></i> Classement des agents</div>
+                <div id="classementContainer"></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="table-wrapper mb-4">
+                <div class="table-title"><i class="bi bi-clock-history"></i> Derniers contrats</div>
+                <ul class="list-group list-group-flush bg-transparent" id="derniersContrats"></ul>
+            </div>
+            <div class="table-wrapper">
+                <div class="table-title"><i class="bi bi-info-circle"></i> Règles métier</div>
+                <div class="p-3">
+                    <div class="d-flex justify-content-between mb-2"><span>📊 1-2 contrats</span><span class="badge bg-success">1%</span></div>
+                    <div class="d-flex justify-content-between mb-2"><span>🔥 3+ contrats</span><span class="badge bg-danger">1.5% sur TOUS</span></div>
+                    <div class="d-flex justify-content-between"><span>✅ 15+ visites</span><span class="badge bg-success">5 000 MAD fixe</span></div>
+                </div>
+            </div>
+            <div class="table-wrapper mt-4">
+                <div class="table-title"><i class="bi bi-bar-chart-fill"></i> Top 5 rémunérations</div>
+                <div style="padding:1rem;"><canvas id="topChartCanvas" height="200"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+<script>
+    (async () => {
+        await loadData();
+        if (!getCurrentUser()) window.location.href = "login.html";
+        if (!isAdmin()) document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        let chartTop = null;
+        function chargerDashboard() {
+            const mois = document.getElementById('filtreMois').value || getCurrentMonth();
+            const contratsMois = contrats.filter(c => c.date.startsWith(mois));
+            const agents = users.filter(u => u.role === 'agent');
+            const stats = agents.map(a => {
+                const agentContrats = contratsMois.filter(c => c.agentId === a.id);
+                const visitsMois = getVisitesByAgentAndMonth(a.id, mois);
+                const salary = calculateSalary(a, agentContrats, visitsMois);
+                return { ...a, ...salary, contratsCount: agentContrats.length, visitsMois };
+            }).sort((a,b) => b.total - a.total);
+            const totalCA = contratsMois.reduce((s,c) => s + c.prixVente, 0);
+            const totalCom = stats.reduce((s,c) => s + c.commission, 0);
+            const actifs = stats.filter(s => s.contratsCount > 0).length;
+            document.getElementById('statsCards').innerHTML = `
+                <div class="col-md-3"><div class="stat-card"><div class="stat-label">CHIFFRE D'AFFAIRES</div><div class="stat-value">${formatMoney(totalCA)}</div><div class="small text-muted">${contratsMois.length} ventes</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-label">COMMISSIONS</div><div class="stat-value">${formatMoney(totalCom)}</div><div class="small text-muted">+ fixes</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-label">AGENTS ACTIFS</div><div class="stat-value">${actifs}/${agents.length}</div><div class="small text-muted">${stats.filter(s => s.visitsMois >= 15).length} ont le fixe</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-label">BONUS 1.5%</div><div class="stat-value">${stats.filter(s => s.nbContrats >= 3).length}</div><div class="small text-muted">agents avec +3 contrats</div></div></div>
+            `;
+            document.getElementById('classementContainer').innerHTML = stats.map((s,i) => `
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="fw-bold text-muted" style="width:40px;">#${i+1}</div>
+                        <div><div class="fw-bold">${s.name}</div><div class="small text-muted">${s.nbContrats} contrats • ${s.visitsMois} visites</div></div>
+                    </div>
+                    <div><span class="badge bg-success fs-6">${formatMoney(s.total)}</span></div>
+                </div>
+            `).join('');
+            const derniers = [...contrats].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,5);
+            const icons = { Villa: "🏡", Appartement: "🏢", Bureau: "💼" };
+            document.getElementById('derniersContrats').innerHTML = derniers.map(c => {
+                const agent = users.find(u => u.id === c.agentId);
+                return `<li class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white border-0">
+                    <div><span>${icons[c.type] || "🏠"}</span> ${c.type}<br><small class="text-muted">${agent?.name} • ${c.date}</small></div>
+                    <span class="fw-bold text-success">${formatMoney(c.prixVente)}</span>
+                </li>`;
+            }).join('');
+            const ctx = document.getElementById('topChartCanvas').getContext('2d');
+            if (chartTop) chartTop.destroy();
+            chartTop = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: stats.slice(0,5).map(s => s.name.split(' ')[0]), datasets: [{ label: 'Rémunération (MAD)', data: stats.slice(0,5).map(s => s.total), backgroundColor: '#0F6E56', borderRadius: 8 }] }
+            });
+        }
+        document.getElementById('filtreMois').addEventListener('change', chargerDashboard);
+        chargerDashboard();
+    })();
+</script>
+</body>
+</html>

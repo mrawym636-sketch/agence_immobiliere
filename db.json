@@ -1,0 +1,23 @@
+{
+  "users": [
+    { "id": 1, "name": "Admin Principal", "email": "admin@prestige.ma", "role": "admin" },
+    { "id": 2, "name": "Youssef Amrani", "email": "youssef@prestige.ma", "role": "agent" },
+    { "id": 3, "name": "Fatima Zahra", "email": "fatima@prestige.ma", "role": "agent" },
+    { "id": 4, "name": "Karim Benali", "email": "karim@prestige.ma", "role": "agent" },
+    { "id": 5, "name": "Nadia El Hassani", "email": "nadia@prestige.ma", "role": "agent" }
+  ],
+  "contrats": [
+    { "id": 1, "agentId": 2, "prixVente": 1500000, "type": "Appartement", "date": "2025-06-05" },
+    { "id": 2, "agentId": 2, "prixVente": 2800000, "type": "Villa", "date": "2025-06-10" },
+    { "id": 3, "agentId": 2, "prixVente": 950000, "type": "Bureau", "date": "2025-06-15" },
+    { "id": 4, "agentId": 4, "prixVente": 1200000, "type": "Appartement", "date": "2025-06-08" },
+    { "id": 5, "agentId": 5, "prixVente": 3500000, "type": "Villa", "date": "2025-06-12" },
+    { "id": 6, "agentId": 5, "prixVente": 800000, "type": "Bureau", "date": "2025-06-18" }
+  ],
+  "visites": [
+    { "id": 1, "agentId": 2, "mois": "2025-06", "nombre": 18 },
+    { "id": 2, "agentId": 3, "mois": "2025-06", "nombre": 12 },
+    { "id": 3, "agentId": 4, "mois": "2025-06", "nombre": 15 },
+    { "id": 4, "agentId": 5, "mois": "2025-06", "nombre": 22 }
+  ]
+}

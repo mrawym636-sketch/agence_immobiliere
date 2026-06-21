@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Agence Prestige</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, var(--bg-dark-1), var(--bg-dark-2), var(--bg-dark-3)); padding: 20px; }
+        .login-card { max-width: 480px; width: 100%; }
+        .login-logo { text-align: center; margin-bottom: 30px; }
+        .login-logo h3 { font-weight: 800; background: linear-gradient(135deg, #ffffff, var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 2rem; }
+        .login-logo p { color: rgba(255,255,255,0.5); font-size: 0.9rem; }
+        .back-link { color: rgba(255,255,255,0.5); text-decoration: none; transition: 0.3s; }
+        .back-link:hover { color: var(--secondary); }
+    </style>
+</head>
+<body>
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-logo">
+            <i class="bi bi-buildings fs-1 text-secondary"></i>
+            <h3>Agence Prestige</h3>
+            <p>Espace de connexion</p>
+        </div>
+        <div class="glass-card p-4 p-md-5">
+            <ul class="nav nav-tabs justify-content-center border-0 mb-4">
+                <li class="nav-item"><button class="nav-link active" id="loginTabBtn">Connexion</button></li>
+                <li class="nav-item"><button class="nav-link" id="registerTabBtn">Inscription</button></li>
+            </ul>
+            <div id="loginPanel">
+                <div id="loginError" class="alert alert-danger small d-none"></div>
+                <div class="mb-3"><label class="form-label">Email</label><input type="email" id="loginEmail" class="form-control bg-transparent text-white" placeholder="exemple@prestige.ma"></div>
+                <div class="mb-3"><label class="form-label">Mot de passe</label><input type="password" id="loginPassword" class="form-control bg-transparent text-white" placeholder="••••••••"></div>
+                <button id="doLoginBtn" class="btn btn-primary w-100 rounded-pill py-2">Se connecter</button>
+                <div class="text-center mt-3"><a href="#" class="back-link" onclick="window.location.href='index.html'"><i class="bi bi-arrow-left me-1"></i> Retour à l'accueil</a></div>
+            </div>
+            <div id="registerPanel" style="display:none;">
+                <div id="registerError" class="alert alert-danger small d-none"></div>
+                <div id="registerSuccess" class="alert alert-success small d-none"></div>
+                <div class="mb-2"><label class="form-label">Nom complet</label><input type="text" id="regName" class="form-control bg-transparent text-white" placeholder="Votre nom"></div>
+                <div class="mb-2"><label class="form-label">Email</label><input type="email" id="regEmail" class="form-control bg-transparent text-white" placeholder="exemple@prestige.ma"></div>
+                <div class="mb-2"><label class="form-label">Mot de passe</label><input type="password" id="regPassword" class="form-control bg-transparent text-white" placeholder="••••••••"></div>
+                <div class="mb-2"><label class="form-label">Confirmer</label><input type="password" id="regConfirm" class="form-control bg-transparent text-white" placeholder="••••••••"></div>
+                <div class="mb-3"><label class="form-label">Rôle</label><select id="regRole" class="form-select bg-transparent text-white"><option value="agent">Agent</option><option value="admin">Admin</option></select></div>
+                <button id="doRegisterBtn" class="btn btn-secondary w-100 rounded-pill py-2">Créer mon compte</button>
+                <div class="text-center mt-3"><a href="#" class="back-link" onclick="window.location.href='index.html'"><i class="bi bi-arrow-left me-1"></i> Retour à l'accueil</a></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+<script>
+    (async () => {
+        await loadData();
+        if (getCurrentUser()) window.location.href = "dashboard.html";
+        document.getElementById('loginTabBtn').onclick = () => {
+            document.getElementById('loginPanel').style.display = 'block';
+            document.getElementById('registerPanel').style.display = 'none';
+            document.getElementById('loginTabBtn').classList.add('active');
+            document.getElementById('registerTabBtn').classList.remove('active');
+        };
+        document.getElementById('registerTabBtn').onclick = () => {
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'block';
+            document.getElementById('registerTabBtn').classList.add('active');
+            document.getElementById('loginTabBtn').classList.remove('active');
+        };
+        document.getElementById('doLoginBtn').onclick = async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pwd = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const user = users.find(u => u.email === email);
+            if (!user) { errorDiv.textContent = "Email introuvable"; errorDiv.classList.remove('d-none'); return; }
+            const hashed = await hashPassword(pwd);
+            if (user.password !== hashed) { errorDiv.textContent = "Mot de passe incorrect"; errorDiv.classList.remove('d-none'); return; }
+            localStorage.setItem('userConnected', JSON.stringify(user));
+            window.location.href = "dashboard.html";
+        };
+        document.getElementById('doRegisterBtn').onclick = async () => {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pwd = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+            const role = document.getElementById('regRole').value;
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            errorDiv.classList.add('d-none');
+            successDiv.classList.add('d-none');
+            if (!name || !email || !pwd) { errorDiv.textContent = "Tous les champs sont requis"; errorDiv.classList.remove('d-none'); return; }
+            if (pwd !== confirm) { errorDiv.textContent = "Les mots de passe ne correspondent pas"; errorDiv.classList.remove('d-none'); return; }
+            if (users.find(u => u.email === email)) { errorDiv.textContent = "Email déjà utilisé"; errorDiv.classList.remove('d-none'); return; }
+            const hashed = await hashPassword(pwd);
+            const newId = Math.max(...users.map(u => u.id), 0) + 1;
+            users.push({ id: newId, name, email, password: hashed, role, visitesMonth: 0 });
+            saveData();
+            successDiv.textContent = "✅ Compte créé ! Connectez-vous.";
+            successDiv.classList.remove('d-none');
+            setTimeout(() => document.getElementById('loginTabBtn').click(), 1500);
+        };
+    })();
+</script>
+</body>
+</html>
