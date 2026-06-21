@@ -1,4 +1,3 @@
-
 # 🏠 Projet de synthèse : Agence Prestige – Gestion des commissions immobilières
 
 **Agence Prestige** est un projet de synthèse conçu pour les stagiaires de première année en développement web (JavaScript) à l'OFPPT.  
@@ -47,7 +46,6 @@ Le projet utilise un fichier `db.json` à la racine faisant office de base de do
 ---
 
 ## 🗂️ Structure du Projet
-
 agence-prestige/
 ├── index.html # Landing page vitrine
 ├── login.html # Page de connexion standalone
@@ -64,9 +62,7 @@ agence-prestige/
 ├── package.json # Scripts npm
 ├── sw.js # Service Worker (PWA)
 ├── manifest.json # Manifest PWA
-└── README.md # Documentation
-text
-
+└── README.md # Documentation (ce fichier)
 
 ---
 
@@ -84,7 +80,6 @@ Pour vérifier que Node.js est bien installé, ouvrez un terminal et tapez :
 
 ```bash
 node -v
-
 Vous devez voir un numéro de version s'afficher (ex: v20.0.0).
 2. Cloner ou télécharger le projet
 
