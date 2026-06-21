@@ -135,103 +135,30 @@ Resources
     Cliquez sur "Open with Live Server".
 
     Le navigateur s'ouvre automatiquement sur http://127.0.0.1:5500/index.html.
+> ✅ L'application est prête. Vous pouvez vous connecter avec les identifiants ci-dessous.
 
-✅ L'application est prête. Vous pouvez vous connecter avec les identifiants ci-dessous.
-🔐 Comptes de test
-Rôle	Email	Mot de passe
-Admin	admin@prestige.ma	admin123
-Agent	youssef@prestige.ma	123456
-Agent	fatima@prestige.ma	123456
-Agent	karim@prestige.ma	123456
-Agent	nadia@prestige.ma	123456
-✅ Fonctionnalités réalisées
+---
 
-    ✅ Authentification (connexion / inscription) avec hash SHA-256
+## 🔐 Comptes de test
 
-    ✅ Gestion de session (localStorage) et redirection automatique
+| Rôle | Email | Mot de passe |
+| --- | --- | --- |
+| **Administrateur** | abakar@gmail.com | 100900 |
 
-    ✅ Tableau de bord avec KPIs et classement des agents
+---
 
-    ✅ Gestion des contrats — affichage, ajout, suppression, filtres
+## ✅ Fonctionnalités réalisées
 
-    ✅ Suivi des visites avec objectif 15 et barre de progression
+* [x] Authentification (connexion / inscription) avec hash SHA-256
+* [x] Gestion de session (localStorage) et redirection automatique
+* [x] Tableau de bord avec statistiques et classement des avocats
+* [x] Gestion des dossiers — affichage, ajout, modification, suppression
+* [x] Filtres sur les dossiers (statut, avocat, recherche)
+* [x] Calcul automatique des honoraires selon le grade
+* [x] Prime de succès automatique (+10% si dossier "Gagné")
+* [x] Gestion des avocats — modification du grade et salaire (admin uniquement)
+* [x] Contrôle des droits Admin / Avocat sur toutes les pages
 
-    ✅ Calcul automatique des commissions (1% / 1.5% + fixe 5000 MAD)
+---
 
-    ✅ Simulateur de commissions interactif (sliders)
-
-    ✅ Gestion des agents — CRUD complet (admin uniquement)
-
-    ✅ Rapports avec graphiques et export CSV + PDF
-
-    ✅ Mode sombre persistant
-
-    ✅ PWA (installable sur mobile / desktop)
-
-    ✅ Tests unitaires intégrés (console)
-
-    ✅ Design Glassmorphism moderne et responsive
-
-    ✅ Contrôle des droits Admin / Agent sur toutes les pages
-
-🧪 Tests unitaires
-
-Les règles métier sont validées par des tests automatiques.
-Ouvrez la console du navigateur (F12) pour voir les résultats :
-text
-
-🧪 TEST DES RÈGLES MÉTIER (10/10)
-✅ Cas 1 (1 contrat + 15 visites) => 15 000,00 MAD
-✅ Cas 2 (2 contrats + 14 visites) => 30 000,00 MAD
-✅ Cas 3 (3 contrats + 15 visites) => 50 000,00 MAD
-✅ TOUS LES TESTS SONT PASSÉS !
-
-📊 Endpoints API (JSON Server)
-Méthode	Endpoint	Description
-GET	/users	Liste des utilisateurs
-GET	/contrats	Liste des contrats
-GET	/visites	Liste des visites
-POST	/users	Ajouter un utilisateur
-POST	/contrats	Ajouter un contrat
-POST	/visites	Ajouter une visite
-PUT	/users/:id	Modifier un utilisateur
-PUT	/contrats/:id	Modifier un contrat
-PUT	/visites/:id	Modifier une visite
-DELETE	/users/:id	Supprimer un utilisateur
-DELETE	/contrats/:id	Supprimer un contrat
-DELETE	/visites/:id	Supprimer une visite
-🎨 Aperçu du design
-
-    Palette : Émeraude (#0F6E56) et Or (#EF9F27)
-
-    Effet Glassmorphism : cartes transparentes avec flou, bordures fines
-
-    Animations : fade‑in, icône flottante, hover sur cartes/boutons
-
-    Mode sombre : persistant (toggle dans parametres.html)
-
-    Responsive : s'adapte à tous les écrans (mobile, tablette, desktop)
-
-🏆 Ce que ce projet apporte de plus
-
-Comparé à un projet standard de gestion, Agence Prestige intègre :
-
-    Simulateur de commissions : visualisation en temps réel de l'impact des performances.
-
-    Export PDF et CSV : rapports professionnels téléchargeables.
-
-    Mode sombre : amélioration de l'expérience utilisateur.
-
-    PWA : l'application peut être installée sur mobile/desktop.
-
-    Tests unitaires : validation automatique de la logique métier.
-
-    Design Glassmorphism : interface moderne et élégante.
-
-📝 Licence
-
-Ce projet est sous licence MIT – libre d'utilisation et de modification.
-
-© 2025 Agence Prestige – Développé dans le cadre du module JavaScript · OFPPT
-
-Développé par [Votre Nom] – Formation Développement Web
+**Développé dans le cadre du module JavaScript — Formation Développement Web · OFPPT**
