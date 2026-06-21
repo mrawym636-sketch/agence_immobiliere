@@ -1,6 +1,6 @@
-# 🏠 Projet de synthèse : Agence Immobilière – Gestion des commissions immobilières
+# 🏠 Projet de synthèse :Agence Prestige – Gestion des commissions immobilières
 
-**Agence Immobilière** est un projet de synthèse conçu pour les **stagiaires de première année en développement web (JavaScript) à l'OFPPT**. Il permet de mettre en pratique les concepts fondamentaux du développement Front-end moderne et de l'interaction avec une API simulée.
+**Agence Prestige** est un projet de synthèse conçu pour les **stagiaires de première année en développement web (JavaScript) à l'OFPPT**. Il permet de mettre en pratique les concepts fondamentaux du développement Front-end moderne et de l'interaction avec une API simulée.
 
 L'objectif est de gérer la **rémunération des agents immobiliers** en fonction de leurs performances (nombre de contrats et visites). Tout le code est volontairement **simple, commenté et accessible aux débutants**.
 
@@ -83,7 +83,7 @@ Le projet utilise un fichier db.json à la racine faisant office de base de donn
 
 🗂️ Structure du Projet
 
-Agence Immobilière/
+Agence Prestige/
 ├── index.html          # Landing page vitrine
 ├── login.html          # Page de connexion standalone
 ├── dashboard.html      # Tableau de bord (statistiques)
