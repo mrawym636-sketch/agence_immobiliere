@@ -83,8 +83,7 @@ Le projet utilise un fichier db.json à la racine faisant office de base de donn
 
 🗂️ Structure du Projet
 
-agence-prestige/
-estige/
+Agence Immobilière/
 ├── index.html          # Landing page vitrine
 ├── login.html          # Page de connexion standalone
 ├── dashboard.html      # Tableau de bord (statistiques)
